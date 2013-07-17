@@ -1,126 +1,139 @@
-#!/bin/bash
+#!/bin/bash -e
 
-STOPTIMEOUT=10
-FMT="%a %b %d %Y %H:%M:%S GMT%z (%Z)"
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
 
-function is_karaf_service_running() {
-    if [ -f $OPENSHIFT_GO_DIR/pid/go.pid ]; then
-        go_pid=$( cat $OPENSHIFT_GO_DIR/pid/go.pid 2> /dev/null )
-        if `ps --pid $go_pid 2>&1`; then
-            return 0
-        fi
+vertx_BIN_DIR=${OPENSHIFT_VERTX_DIR}/bin
+vertx_PID_FILE=${OPENSHIFT_HOMEDIR}/app-root/runtime/vertx.pid
+
+cartridge_type="vertx"
+
+VERTX_BIN_DIR=${OPENSHIFT_VERTX_DIR}/bin
+VERTX_PID_FILE=${OPENSHIFT_HOMEDIR}/app-root/runtime/vertx.pid
+
+# Check if the jbossas process is running
+function isrunning() {
+    
+    # Check for running app
+    if [ -f "$VERTX_PID_FILE" ]; then
+      jbpid=$(cat $VERTX_PID_FILE);
+      if /bin/ps --pid $jbpid 1>&2 >/dev/null;
+      then
+        return 0
+      fi
     fi
-
+   
     return 1
 }
 
-function status() {
-    if [ is_karaf_service_running ]; then
-        client_result "Application is running"
+# Kill the process given by $1 and its children
+killtree() {
+    local _pid=$1
+    for _child in $(ps -o pid --no-headers --ppid ${_pid}); do
+        killtree ${_child}
+    done
+
+    local should_be_gone_pid=$(ps -o pid -p ${_pid} --no-headers)
+    if [ -z $should_be_gone_pid ]; then
+        return
     else
-        client_result "Application is not running"
+        kill -TERM ${_pid}
     fi
-}
 
-
-function start() {
-    logf="$OPENSHIFT_GO_DIR/logs/go.log"
-    pushd "$OPENSHIFT_REPO_DIR" > /dev/null
-    {
-        godir=$(cat .godir)
-        package=$(basename $godir)
-
-        if [ -f "bin/$package" ]; then
-            echo "`date +"$FMT"`: Starting application '$OPENSHIFT_APP_NAME' from bin/$package..."
-
-            nohup "bin/$package" >> $logf 2>&1 &
-
-            ret=$?
-            npid=$!
-            if [ $ret -eq 0 ]; then
-                echo "$npid" > "$OPENSHIFT_GO_DIR/pid/go.pid"
-            else
-                echo "Application '$OPENSHIFT_APP_NAME' failed to start - $ret" 1>&2
-                exit $ret
-            fi
+    local count=0
+    while [ ${count} -lt 15 ]
+    do
+        local should_be_gone_pid=$(ps -o pid -p ${_pid} --no-headers)
+        if [ -z $should_be_gone_pid ]; then
+                return
         else
-            echo "WARN: Could not find the compiled application bin/$package, will not start"
+                sleep 2
+                let count=${count}+1
         fi
-    } >> $logf
+    done
+
+    local should_be_gone_pid=$(ps -o pid -p ${_pid} --no-headers)
+    if [ ! -z $should_be_gone_pid ]
+    then
+        kill -9 ${_pid}
+    fi
 }
 
 function stop() {
-    if [ -f $OPENSHIFT_GO_DIR/pid/go.pid ]; then
-        go_pid=$( cat $OPENSHIFT_GO_DIR/pid/go.pid 2> /dev/null )
-    fi
+  echo "Stopping $cartridge_type cart"
+  
+  if isrunning; then
+		if [ -f "$VERTX_PID_FILE" ]; then
+      pid=$(cat $VERTX_PID_FILE);
+      echo "Sending SIGTERM to jboss:$pid ..." 1>&2
+      killtree $pid
+    else 
+	    echo "Failed to locate JBOSS PID File" 1>&2
+	  fi
+  fi
+}
 
-    if [ -n "$go_pid" ]; then
-        logf="$OPENSHIFT_GO_DIR/logs/go.log"
-        echo "`date +"$FMT"`: Stopping application '$OPENSHIFT_APP_NAME' ..." >> $logf
-        /bin/kill $go_pid
-        ret=$?
-        if [ $ret -eq 0 ]; then
-            TIMEOUT="$STOPTIMEOUT"
-            while [ $TIMEOUT -gt 0 ] && is_go_service_running ; do
-                /bin/kill -0 "$go_pid" >/dev/null 2>&1 || break
-                sleep 1
-                let TIMEOUT=${TIMEOUT}-1
-            done
-        fi
+function replace_envs {
+    version=1.3
+    
+	cp -r ${OPENSHIFT_VERTX_DIR}/versions/${version}/bin/run-vertx.sh $OPENSHIFT_VERTX_DIR/bin
+	cp -r ${OPENSHIFT_VERTX_DIR}/versions/${version}/vert.x-1.3.1.final/conf/cluster.xml $OPENSHIFT_VERTX_DIR/vert.x-1.3.1.final/conf
+	cp -r ${OPENSHIFT_VERTX_DIR}/versions/${version}/vert.x-1.3.1.final/bin/vertx $OPENSHIFT_VERTX_DIR/vert.x-1.3.1.final/bin
+	
+	if [ -z "$OPENSHIFT_VERTX_CLUSTER" ]; then
+		OPENSHIFT_VERTX_CLUSTER="${OPENSHIFT_VERTX_IP}"
+	fi
+	
+	OPENSHIFT_VERTX_PROXY_IP=$(ping -c 1 ${OPENSHIFT_GEAR_DNS} | awk '{ print $3 ; exit }' | sed 's/(//g' | sed 's/)//g')
+	
+	hostnames=
+	for address in $OPENSHIFT_VERTX_CLUSTER; do
+		hostnames="<hostname>$address<\/hostname>${hostnames}"
+	done
+	
+	pushd $OPENSHIFT_VERTX_DIR
+		sed -i -e "s/\${env.OPENSHIFT_VERTX_CLUSTER_PROXY_PORT}/${OPENSHIFT_VERTX_CLUSTER_PROXY_PORT}/g" \
+				-e "s/\${env.OPENSHIFT_VERTX_PROXY_IP}/${OPENSHIFT_VERTX_PROXY_IP}/g" \
+				-e "s/\${env.OPENSHIFT_VERTX_CLUSTER}/${hostnames}/g" \
+				./vert.x-1.3.1.final/conf/cluster.xml
+				
+		sed -i -e "s/\${env.OPENSHIFT_VERTX_IP}/${OPENSHIFT_VERTX_IP}/g" \
+				-e "s/\${env.OPENSHIFT_VERTX_PROXY_IP}/${OPENSHIFT_VERTX_PROXY_IP}/g" \
+				-e "s/\${env.OPENSHIFT_VERTX_VERTX_PROXY_PORT}/${OPENSHIFT_VERTX_VERTX_PROXY_PORT}/g" \
+				./bin/run-vertx.sh
+			
+		sed -i -e "s/\${env.OPENSHIFT_VERTX_IP}/${OPENSHIFT_VERTX_IP}/g" \
+			-e "s/\${env.OPENSHIFT_VERTX_PROXY_IP}/${OPENSHIFT_VERTX_PROXY_IP}/g" \
+			-e "s/\${env.OPENSHIFT_VERTX_CLUSTER_PROXY_PORT}/${OPENSHIFT_VERTX_CLUSTER_PROXY_PORT}/g" \
+			./vert.x-1.3.1.final/bin/vertx
+	popd
+}
 
-        echo "`date +"$FMT"`: Stopped Go application '$OPENSHIFT_APP_NAME'" >> $logf
-        rm -f $OPENSHIFT_GO_DIR/pid/go.pid
-    else
-        echo "Warning: Application '$OPENSHIFT_APP_NAME' server exists without a pid file.  Use force-stop to kill." 1>&2
-    fi
+function start() {
+
+    replace_envs
+
+	pushd ${OPENSHIFT_VERTX_DIR}/template
+		../bin/run-vertx.sh > ${OPENSHIFT_TMP_DIR}/${cartridge_type}.log 2>&1 &
+		PROCESS_ID=$!
+    	echo "$PROCESS_ID" > ${VERTX_PID_FILE}
+	popd
+
 }
 
 function restart() {
-    stop
-    start
+    echo "Restarting $cartridge_type cart"
+   
+  	stop
+  	
+  	start
 }
 
-function build() {
-}
-
-function post-deploy() {
-    echo
-}
-
-function pre-build() {
-    echo
-}
-
-function tidy() {
-  client_message "Emptying log dir: $OPENSHIFT_GO_DIR/logs"
-  shopt -s dotglob
-  rm -rf $OPENSHIFT_GO_DIR/logs/*
-  rm -rf $OPENSHIFT_GO_DIR/tmp/*
-}
-
-#
-#  main():
-#
-
-# Ensure arguments.
-if ! [ $# -eq 1 ]; then
-    echo "Usage: $0 [start|restart|graceful|graceful-stop|stop|status]"
-    exit 1
-fi
-
-# Source utility functions.
-source $OPENSHIFT_CARTRIDGE_SDK_BASH
-
-# Handle commands.
 case "$1" in
-    start)               start       ;;
-    restart|graceful)    restart     ;;
-    graceful-stop|stop)  stop        ;;
-    status)              status      ;;
-    build)               build       ;;
-    pre-build)           pre-build   ;;
-    post-deploy)         post-deploy ;;
-    tidy)                tidy        ;;
-    *) exit 0;
+  start)        start ;;
+  stop)			stop ;;
+  restart) 		restart ;;
+  *)            exit 0
 esac
+
+
 
