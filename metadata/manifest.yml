@@ -4,7 +4,7 @@ Display-Name: 'Navajo 3.0.0'
 Description: 'Navajo 3.0.0'
 Version: 3.0.0
 Licence: LGPL
-Source-Url: git@github.com:flyaruu/navajo.cartridge.git
+Source-Url: 'git@github.com:flyaruu/navajo.cartridge.git'
 Versions:
   - 3.0.0
 Website: 'https://github.com/Dexels/navajo'
