@@ -1,8 +1,10 @@
 Name: navajo
 Cartridge-Short-Name: NAVAJO
 Display-Name: 'Navajo 3.0.0'
-Source-Url: 'git@github.com:flyaruu/navajo.cartridge.git'
+Description: 'Navajo 3.0.0'
 Version: 3.0.0
+Licence: LGPL
+Source-Url: https://raw.github.com/flyaruu/navajo.cartridge/master/metadata/manifest.yml 
 Versions:
   - 3.0.0
 Website: 'https://github.com/Dexels/navajo'
