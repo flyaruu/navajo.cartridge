@@ -18,7 +18,7 @@
 DIRNAME=`dirname $0`
 PROGNAME=`basename $0`
 
-JAVA_MAX_MEM=8000M
+JAVA_MAX_MEM=1000M
 
 #
 # Sourcing environment settings for karaf similar to tomcats setenv
