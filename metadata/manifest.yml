@@ -1,0 +1,40 @@
+Name: navajo
+Cartridge-Short-Name: NAVAJO
+Display-Name: Navajo 3.0.0 
+Version: "3.0.0"
+Versions: ["3.0.0"]
+Website: https://github.com/Dexels/navajo
+Cartridge-Version: 0.0.1
+Cartridge-Vendor: Dexels
+Categories:
+  - service
+  - web_framework
+Scaling:
+  Min: 1
+  Max: 1
+Subscribes:
+  set-db-connection-info:
+    Type: "ENV:NET_TCP:db:connection-info"
+    Required: false
+  set-mysql-connection-info:
+    Type: "NET_TCP:db:mysql"
+    Required : false
+  set-postgres-connection-info:
+    Type: "NET_TCP:db:postgres"
+    Required : false
+  set-nosql-db-connection-info:
+    Type: "ENV:NET_TCP:nosqldb:connection-info"
+    Required : false
+Endpoints:
+  - Private-IP-Name:   IP
+    Private-Port-Name: PORT
+    Private-Port:      8080
+    Public-Port-Name:  PROXY_PORT
+    Mappings:
+      - Frontend:      ""
+        Backend:       ""
+        Options:       { websocket: true }
+      - Frontend:      "/health"
+        Backend:       ""
+        Options:       { health: true }
+Install-Build-Required: false
