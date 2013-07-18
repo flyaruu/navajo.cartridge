@@ -65,7 +65,7 @@ function stop() {
 }
 
 function start() {
-	bin/start.sh
+	bin/start
 }
 
 function restart() {

@@ -55,5 +55,5 @@ pushDeployedRepo() {
 
 downloadKaraf
 installKaraf
-appendTemplate
+#appendTemplate
 pushDeployedRepo
