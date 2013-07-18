@@ -32,7 +32,7 @@ Subscribes:
 Endpoints:
   -
     Private-IP-Name: IP
-    Private-Port-Name: PORT
+    Private-Port-Name: HTTP_PORT
     Private-Port: 8080
     Public-Port-Name: PROXY_PORT
     Mappings:
