@@ -46,6 +46,7 @@ appendTemplate() {
 appendTemplateGit() {
 	cd $RUNTIME
 	git clone https://github.com/Dexels/navajo.template.git template
+	rm -rf $RUNTIME/template.git
 }
  
 pushDeployedRepo() {
