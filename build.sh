@@ -43,6 +43,11 @@ appendTemplate() {
 	git clone https://github.com/Dexels/navajo.template.git template.git --bare
 }
  
+appendTemplateGit() {
+	cd $RUNTIME
+	git clone https://github.com/Dexels/navajo.template.git template
+}
+ 
 pushDeployedRepo() {
 	cd $RUNTIME
 	git init
@@ -55,5 +60,5 @@ pushDeployedRepo() {
 
 downloadKaraf
 installKaraf
-#appendTemplate
+appendTemplateGit
 pushDeployedRepo
