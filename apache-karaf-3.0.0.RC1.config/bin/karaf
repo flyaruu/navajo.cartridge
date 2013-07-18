@@ -29,7 +29,7 @@ if [ -f "$DIRNAME/setenv" ]; then
   . "$DIRNAME/setenv"
 fi
 
-source ./variables.sh
+source bin/variables.sh
 
 #
 # Set up some easily accessible MIN/MAX params for JVM mem usage

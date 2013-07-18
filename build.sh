@@ -41,6 +41,9 @@ installKaraf() {
 appendTemplate() {
 	cd $RUNTIME
 	git clone https://github.com/Dexels/navajo.template.git template.git --bare
+	touch template.git/refs/heads/.gitignore
+	touch template.git/refs/tags/.gitignore
+	touch template.git/branches/.gitignore
 }
  
 appendTemplateGit() {
@@ -61,5 +64,5 @@ pushDeployedRepo() {
 
 downloadKaraf
 installKaraf
-appendTemplateGit
+appendTemplate
 pushDeployedRepo
