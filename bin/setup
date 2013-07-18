@@ -1,1 +1,4 @@
-source ./bin/deploy.sh
+#source ./bin/deploy.sh
+echo "Running setup, but doing nothing"
+mkdir -p $OPENSHIFT_DATA_DIR/karafdata
+
