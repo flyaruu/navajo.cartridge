@@ -65,6 +65,7 @@ function stop() {
 }
 
 function start() {
+	echo "Starting navajo cartridge"
 	bin/start
 }
 
