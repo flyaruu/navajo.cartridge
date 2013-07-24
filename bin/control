@@ -67,7 +67,7 @@ function stop() {
 
 function start() {
 	echo "Starting navajo cartridge"
-	#bin/karaf server &
+	bin/karaf server &
 }
 
 function restart() {
