@@ -379,7 +379,10 @@ run() {
         JAVA_EXT_DIRS=`cygpath --path --windows "$JAVA_EXT_DIRS"`
     fi
     cd "$KARAF_BASE"
-JAVA_OPTS="${JAVA_OPTS} ${NAVAJO_OPTS}" 
+export JAVA_OPTS="${JAVA_OPTS} ${NAVAJO_OPTS}" 
+export OPENSHIFT_OPTS="$OPENSHIFT_OPTS -Dkaraf.m2.dir=$OPENSHIFT_DATA_DIR/m2 -Dkaraf.internal.ip=$OPENSHIFT_NAVAJO_IP -Drepo=$OPENSHIFT_REPO_DIR"
+
+
 echo "OPENSHIFT OPTIONS: $OPENSHIFT_OPTS"
 echo "JAVA OPTIONS: $JAVA_OPTS"
 echo "OTHER OPTIONS: $OPTS"

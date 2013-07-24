@@ -52,7 +52,8 @@ killtree() {
 
 function stop() {
   echo "Stopping $cartridge_type cart"
-  
+  killall java
+ 
   if isrunning; then
 		if [ -f "$VERTX_PID_FILE" ]; then
       pid=$(cat $VERTX_PID_FILE);

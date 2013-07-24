@@ -10,3 +10,4 @@ KARAF_FILE=${KARAF_VERSION}.tar.gz
 KARAF_CONFIG=${DIR}/${KARAF_VERSION}.config
 KARAF_URL=http://ftp.nluug.nl/internet/apache/karaf/3.0.0.RC1/
 NAVAJO_OPTS="-DtipiDir=${TIPIDIR}"
+INTERNAL_IP=$OPENSHIFT_INTERNAL_IP
