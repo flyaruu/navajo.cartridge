@@ -1,4 +1,5 @@
 #!/bin/bash -e
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function setup_hazelcast {
   # TODO: Figure out a better way to do this
@@ -34,11 +35,11 @@ function setup_hazelcast {
 
 function stop() {
   echo "Stopping $cartridge_type cart"
-  ./stop.sh  
+  ${DIR}/stop.sh  
 }
 function start() {
   echo "Starting karaf cartridge"
-  ./start.sh
+  ${DIR}/start.sh
 }
 
 function restart() {
