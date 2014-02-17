@@ -10,7 +10,7 @@ else
 	INTERNAL_IP=$OPENSHIFT_INTERNAL_IP
 fi
 
-source $BASE/bin/parameters.sh
+source ${DIR}/parameters.sh
 
 echo "RMI ${RMI_REGISTRY_PORT}"
 TMP=$BASE/tmp
