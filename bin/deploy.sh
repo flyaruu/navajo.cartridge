@@ -1,6 +1,6 @@
 #!/bin/sh
 # some update
-# more updates
+# even more updates
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 getsrc() {
 	echo $1

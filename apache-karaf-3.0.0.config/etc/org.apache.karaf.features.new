@@ -26,14 +26,24 @@
 #
 #respectStartLvlDuringFeatureStartup=true
 
+
+#
+# Defines if the startlvl should be respected during feature uninstall. The default value is true.
+# If true, means stop bundles respecting the descend order of start level in a certain feature.
+#
+#respectStartLvlDuringFeatureUninstall=true
+
 #
 # Comma separated list of features repositories to register by default
 #
-featuresRepositories = mvn:org.apache.karaf.features/standard/3.0.0.RC1/xml/features,mvn:org.apache.karaf.features/enterprise/3.0.0.RC1/xml/features,mvn:org.ops4j.pax.web/pax-web-features/3.0.0.M3/xml/features,mvn:org.apache.karaf.features/spring/3.0.0.RC1/xml/features,mvn:org.apache.camel.karaf/apache-camel/2.10.2/xml/features,mvn:com.dexels.navajo/com.dexels.navajo.karaf.feature/1.0.35/features.xml
-
+featuresRepositories=mvn:org.apache.karaf.features/standard/3.0.0/xml/features,mvn:org.apache.karaf.features/enterprise/3.0.0/xml/features,mvn:org.ops4j.pax.web/pax-web-features/3.0.5/xml/features,mvn:org.apache.karaf.features/spring/3.0.0/xml/features
 
 #
 # Comma separated list of features to install at startup
 #
-featuresBoot = pax-http,config,standard,region,package,kar,ssh,management,http-whiteboard
+featuresBoot=config,standard,region,package,kar,ssh,management
 
+#
+# Defines if the boot features are started in asynchronous mode (in a dedicated thread)
+#
+featuresBootAsynchronous=false

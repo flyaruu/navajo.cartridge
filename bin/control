@@ -1,87 +1,57 @@
 #!/bin/bash -e
 
-source bin/variables.sh
+function setup_hazelcast {
+  # TODO: Figure out a better way to do this
+  if [ -f "$OPENSHIFT_VERTX_DIR/versions/shared/conf/cluster.xml" ]; then
+    cp $OPENSHIFT_VERTX_DIR/versions/shared/conf/cluster.xml $OPENSHIFT_VERTX_DIR/conf/
+  fi
 
-# Check if the jbossas process is running
-function isrunning() {
-    
-    # Check for running app
-    if [ -f "$VERTX_PID_FILE" ]; then
-      jbpid=$(cat $VERTX_PID_FILE);
-      if /bin/ps --pid $jbpid 1>&2 >/dev/null;
-      then
-        return 0
-      fi
-    fi
-   
-    return 1
-}
-
-# Kill the process given by $1 and its children
-killtree() {
-    local _pid=$1
-    for _child in $(ps -o pid --no-headers --ppid ${_pid}); do
-        killtree ${_child}
-    done
-
-    local should_be_gone_pid=$(ps -o pid -p ${_pid} --no-headers)
-    if [ -z $should_be_gone_pid ]; then
-        return
-    else
-        kill -TERM ${_pid}
-    fi
-
-    local count=0
-    while [ ${count} -lt 15 ]
-    do
-        local should_be_gone_pid=$(ps -o pid -p ${_pid} --no-headers)
-        if [ -z $should_be_gone_pid ]; then
-                return
-        else
-                sleep 2
-                let count=${count}+1
-        fi
-    done
-
-    local should_be_gone_pid=$(ps -o pid -p ${_pid} --no-headers)
-    if [ ! -z $should_be_gone_pid ]
-    then
-        kill -9 ${_pid}
-    fi
+  if [ -f "$OPENSHIFT_VERTX_DIR/versions/$version/conf/cluster.xml" ]; then
+    cp $OPENSHIFT_VERTX_DIR/versions/$version/conf/cluster.xml $OPENSHIFT_VERTX_DIR/conf/
+  fi
+  
+  if [ -z "$OPENSHIFT_VERTX_HAZELCAST_CLUSTER" ]; then
+    OPENSHIFT_VERTX_HAZELCAST_CLUSTER="${OPENSHIFT_VERTX_IP}"
+  fi
+  
+  OPENSHIFT_VERTX_PROXY_IP=$(ping -c 1 ${OPENSHIFT_GEAR_DNS} | awk '{ print $3 ; exit }' | sed 's/(//g' | sed 's/)//g')
+  #OPENSHIFT_VERTX_PROXY_IP=$OPENSHIFT_VERTX_IP
+  
+  hostnames=
+  for address in $OPENSHIFT_VERTX_HAZELCAST_CLUSTER; do
+    hostnames="<hostname>$address<\/hostname>${hostnames}"
+  done
+  
+  pushd $OPENSHIFT_VERTX_DIR > /dev/null
+      sed -i  -e "s/\${env.OPENSHIFT_VERTX_HAZELCAST_PROXY_PORT}/${OPENSHIFT_VERTX_HAZELCAST_PROXY_PORT}/g" \
+              -e "s/\${env.OPENSHIFT_VERTX_HAZELCAST_PORT}/${OPENSHIFT_VERTX_HAZELCAST_PORT}/g" \
+              -e "s/\${env.OPENSHIFT_VERTX_PROXY_IP}/${OPENSHIFT_VERTX_PROXY_IP}/g" \
+              -e "s/\${env.OPENSHIFT_VERTX_IP}/${OPENSHIFT_VERTX_IP}/g" \
+              -e "s/\${env.OPENSHIFT_VERTX_HAZELCAST_CLUSTER}/${hostnames}/g" \
+              ./conf/cluster.xml
+  popd > /dev/null
 }
 
 function stop() {
   echo "Stopping $cartridge_type cart"
-  killall java
- 
-  if isrunning; then
-		if [ -f "$VERTX_PID_FILE" ]; then
-      pid=$(cat $VERTX_PID_FILE);
-      echo "Sending SIGTERM to jboss:$pid ..." 1>&2
-      killtree $pid
-    else 
-	    echo "Failed to locate JBOSS PID File" 1>&2
-	  fi
-  fi
+  ./stop.sh  
 }
-
 function start() {
-	echo "Starting navajo cartridge"
-	bin/karaf server &
+  echo "Starting karaf cartridge"
+  ./start.sh
 }
 
 function restart() {
     echo "Restarting $cartridge_type cart"
-  	stop
-  	start
+   
+    stop
+    
+    start
 }
 
 case "$1" in
   start)        start ;;
-  stop)			stop ;;
-  restart) 		restart ;;
+  stop)     stop ;;
+  restart)    restart ;;
   *)            exit 0
 esac
-
-
-
