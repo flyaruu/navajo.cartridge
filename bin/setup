@@ -9,8 +9,8 @@ mkdir -p ${OPENSHIFT_HOMEDIR}/.m2
 
 shopt -s dotglob
 for dir in logs; do
-    mkdir -p $OPENSHIFT_VERTX_DIR/$dir
+    mkdir -p $OPENSHIFT_KARAF_DIR/$dir
 done
 
-echo "$version" > $OPENSHIFT_VERTX_DIR/env/OPENSHIFT_VERTX_VERSION
-echo "M5" > $OPENSHIFT_VERTX_DIR/env/OPENSHIFT_VERTX_MILESTONE
+echo "$version" > $OPENSHIFT_KARAF_DIR/env/OPENSHIFT_KARAF_VERSION
+echo "M5" > $OPENSHIFT_KARAF_DIR/env/OPENSHIFT_KARAF_MILESTONE
