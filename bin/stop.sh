@@ -4,6 +4,7 @@ echo "sourcing: ${DIR}/variables.sh"
 source ${DIR}/variables.sh
 
 cd ${RUNTIME}/karaf/bin
+set +e
 ./stop
 
 
