@@ -6,6 +6,7 @@ if [ -d "${RUNTIME}/karaf/bin" ]; then
 	set +e
 	cd ${RUNTIME}/karaf/bin
 	./stop
+	echo "returned: $?"
 fi
 
 
