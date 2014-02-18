@@ -1,4 +1,5 @@
 #!/bin/bash -e
+echo "Control called with: $1"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function setup_hazelcast {
