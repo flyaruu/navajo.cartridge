@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-set -z
+set -x
 
 if [ -z ${OPENSHIFT_APP_NAME} ]; then
   echo "OPENSHIFT DETECTED:"
