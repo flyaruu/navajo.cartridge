@@ -7,6 +7,7 @@ if [ -z ${OPENSHIFT_APP_NAME} ]; then
   set
 
 else
+  echo "NO OPENSHIFT DETECTED:"
 fi
 
 
