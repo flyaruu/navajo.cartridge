@@ -30,21 +30,21 @@ Subscribes:
     Type: 'ENV:NET_TCP:nosqldb:connection-info'
     Required: false
 Endpoints:
-  -
-    Private-IP-Name: IP
-    Private-Port-Name: HTTP_PORT
-    Private-Port: 8080
-    Public-Port-Name: PROXY_PORT
-    Mappings:
-      -
-        Frontend: ''
-        Backend: ''
-        Options:
-          websocket: true
-      -
-        Frontend: /health
-        Backend: ''
-        Options:
-          health: true
+    - Private-IP-Name:   IP
+      Private-Port-Name: SSH_PORT
+      Private-Port:      18101
+      Public-Port-Name:  SSH_PROXY_PORT
+    - Private-IP-Name:   IP
+      Private-Port-Name: HAZELCAST_PORT
+      Private-Port:      5701
+      Public-Port-Name:  HAZELCAST_PROXY_PORT
+    - Private-IP-Name: IP
+      Private-Port-Name: PORT
+      Private-Port: 8080
+      Public-Port-Name: PROXY_PORT
+      Mappings:
+        - Frontend: ''
+          Backend: ''
+          Options: { "websocket": 1}
 Install-Build-Required: false
 
